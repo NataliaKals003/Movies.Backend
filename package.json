@@ -1,0 +1,24 @@
+{
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "express": "^4.19.2",
+    "express-async-errors": "^3.1.1",
+    "knex": "^3.1.0",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.7"
+  },
+  "name": "api-movies",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node ./src/server.js ",
+    "dev": "nodemon ./src/server.js",
+    "migrate": "knex migrate:latest"
+  },
+  "author": "Natalia Kals",
+  "license": "ISC",
+  "description": "API-Movies",
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}

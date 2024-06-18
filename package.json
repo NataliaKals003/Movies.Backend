@@ -12,18 +12,20 @@
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7"
   },
-  "name": "api-movies",
+  "name": "movies-backend",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
     "start": "pm2-runtime start ecosystem.config.js --env production",
     "dev": "nodemon ./src/server.js",
-    "migrate": "knex migrate:latest"
+    "migrate": "knex migrate:latest",
+    "test": "jest --watch"
   },
   "author": "Natalia Kals",
   "license": "ISC",
-  "description": "API-Movies",
+  "description": "Movies.Backend",
   "devDependencies": {
+    "jest": "^29.7.0",
     "nodemon": "^3.1.0"
   }
 }

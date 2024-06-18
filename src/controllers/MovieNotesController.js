@@ -1,100 +1,42 @@
 const knex = require('../database/knex');
+const NotesRepository = require('../repositores/NotesRepository');
+const NotesService = require('../services/NotesService');
+
 
 class MovieNotesController {
     async create(request, response) {
         const { title, description, rating, tags } = request.body;
         const user_id = request.user.id;
 
-        const [note_id] = await knex("movie_notes").insert({
-            title,
-            description,
-            rating,
-            user_id
-        });
+        const notesRepository = new NotesRepository();
+        const notesService = new NotesService(notesRepository);
 
-        if (tags && tags.length > 0) {
-            const tagsInsert = tags.map(name => {
-                return {
-                    note_id,
-                    name,
-                    user_id
-                }
-            });
-            await knex("movie_tags").insert(tagsInsert);
-        }
+        const note_id = await notesService.create({ title, description, rating, tags, user_id });
 
-        return response.json();
+        return response.json({ note_id });
     }
 
     async getOne(request, response) {
         const { id } = request.params;
+        const user_id = request.user.id
 
-        const movie_notes = await knex("movie_notes")
-            .join('users', 'movie_notes.user_id', '=', 'users.id')
-            .where('movie_notes.id', id)
-            .select(
-                'movie_notes.*',
-                'users.name as user_name',
-                'users.email as user_email',
-                'users.avatar as user_avatar'
-            )
-            .first();
+        const notesRepository = new NotesRepository();
+        const notesService = new NotesService(notesRepository);
 
-        const movie_tags = await knex("movie_tags")
-            .where({ note_id: id }).orderBy("name");
-
-        return response.json({
-            ...movie_notes,
-            movie_tags
-        });
+        const note = await notesService.getOne({ id, user_id });
+        return response.status(201).json(note);
     }
 
     async getAll(request, response) {
         const { title, rating, tags } = request.query;
-
         const user_id = request.user.id;
-        let movie_notes;
 
-        if (tags) {
-            const filterTags = tags.split(',').map(tag => tag.trim());
+        const notesRepository = new NotesRepository();
+        const notesService = new NotesService(notesRepository);
 
-            movie_notes = await knex("movie_notes")
-                .select([
-                    "movie_notes.id",
-                    "movie_notes.title",
-                    "movie_notes.description",
-                    "movie_notes.rating",
-                    "movie_notes.user_id",
-                ])
-                .leftJoin("movie_tags", "movie_notes.id", "movie_tags.note_id")
-                .groupBy("movie_notes.id")
-                .where({ "movie_notes.user_id": user_id })
-                .where("movie_notes.title", "like", `%${title}%`)
-                .whereIn("movie_tags.name", filterTags)
-                .orderBy("movie_notes.title");
-        } else {
-            movie_notes = await knex("movie_notes")
-                .select("*")
-                .where({ user_id })
-                .where("title", "like", `%${title}%`)
-                .modify(queryBuilder => {
-                    if (rating) queryBuilder.where({ rating });
-                })
-                .orderBy("title");
-        }
+        const note = await notesService.getAll({ title, rating, tags, user_id });
 
-        const userTags = await knex("movie_tags").where({ user_id });
-
-        const notesWithTags = movie_notes.map(note => {
-            const noteTags = userTags.filter(tag => tag.note_id === note.id).map(tag => tag.name);
-
-            return {
-                ...note,
-                tags: noteTags
-            };
-        });
-
-        return response.json(notesWithTags);
+        return response.json(note);
     }
 
     async delete(request, response) {

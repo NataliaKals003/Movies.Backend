@@ -1,11 +1,14 @@
-const knex = require('../database/knex');
+const TagsRepository = require('../repositores/TagsRepository');
+const TagsService = require('../services/TagsService');
 
 class MovieTagsController {
     async getAll(request, response) {
         const user_id = request.user.id;
 
-        const movie_tags = await knex("movie_tags")
-            .where({ user_id })
+        const tagsRepository = new TagsRepository();
+        const tagsService = new TagsService(tagsRepository);
+
+        const movie_tags = await tagsService.createTag(user_id);
 
         return response.json(movie_tags);
     }
